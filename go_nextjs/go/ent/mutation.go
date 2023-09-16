@@ -30,17 +30,22 @@ const (
 // TodoMutation represents an operation that mutates the Todo nodes in the graph.
 type TodoMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	title         *string
-	description   *string
-	status        *todo.Status
-	created_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Todo, error)
-	predicates    []predicate.Todo
+	op              Op
+	typ             string
+	id              *int
+	title           *string
+	description     *string
+	status          *todo.Status
+	created_at      *time.Time
+	clearedFields   map[string]struct{}
+	children        map[int]struct{}
+	removedchildren map[int]struct{}
+	clearedchildren bool
+	parent          *int
+	clearedparent   bool
+	done            bool
+	oldValue        func(context.Context) (*Todo, error)
+	predicates      []predicate.Todo
 }
 
 var _ ent.Mutation = (*TodoMutation)(nil)
@@ -285,6 +290,99 @@ func (m *TodoMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
+// AddChildIDs adds the "children" edge to the Todo entity by ids.
+func (m *TodoMutation) AddChildIDs(ids ...int) {
+	if m.children == nil {
+		m.children = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.children[ids[i]] = struct{}{}
+	}
+}
+
+// ClearChildren clears the "children" edge to the Todo entity.
+func (m *TodoMutation) ClearChildren() {
+	m.clearedchildren = true
+}
+
+// ChildrenCleared reports if the "children" edge to the Todo entity was cleared.
+func (m *TodoMutation) ChildrenCleared() bool {
+	return m.clearedchildren
+}
+
+// RemoveChildIDs removes the "children" edge to the Todo entity by IDs.
+func (m *TodoMutation) RemoveChildIDs(ids ...int) {
+	if m.removedchildren == nil {
+		m.removedchildren = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.children, ids[i])
+		m.removedchildren[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedChildren returns the removed IDs of the "children" edge to the Todo entity.
+func (m *TodoMutation) RemovedChildrenIDs() (ids []int) {
+	for id := range m.removedchildren {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ChildrenIDs returns the "children" edge IDs in the mutation.
+func (m *TodoMutation) ChildrenIDs() (ids []int) {
+	for id := range m.children {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetChildren resets all changes to the "children" edge.
+func (m *TodoMutation) ResetChildren() {
+	m.children = nil
+	m.clearedchildren = false
+	m.removedchildren = nil
+}
+
+// SetParentID sets the "parent" edge to the Todo entity by id.
+func (m *TodoMutation) SetParentID(id int) {
+	m.parent = &id
+}
+
+// ClearParent clears the "parent" edge to the Todo entity.
+func (m *TodoMutation) ClearParent() {
+	m.clearedparent = true
+}
+
+// ParentCleared reports if the "parent" edge to the Todo entity was cleared.
+func (m *TodoMutation) ParentCleared() bool {
+	return m.clearedparent
+}
+
+// ParentID returns the "parent" edge ID in the mutation.
+func (m *TodoMutation) ParentID() (id int, exists bool) {
+	if m.parent != nil {
+		return *m.parent, true
+	}
+	return
+}
+
+// ParentIDs returns the "parent" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ParentID instead. It exists only for internal usage by the builders.
+func (m *TodoMutation) ParentIDs() (ids []int) {
+	if id := m.parent; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetParent resets all changes to the "parent" edge.
+func (m *TodoMutation) ResetParent() {
+	m.parent = nil
+	m.clearedparent = false
+}
+
 // Where appends a list predicates to the TodoMutation builder.
 func (m *TodoMutation) Where(ps ...predicate.Todo) {
 	m.predicates = append(m.predicates, ps...)
@@ -469,48 +567,102 @@ func (m *TodoMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TodoMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.children != nil {
+		edges = append(edges, todo.EdgeChildren)
+	}
+	if m.parent != nil {
+		edges = append(edges, todo.EdgeParent)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TodoMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case todo.EdgeChildren:
+		ids := make([]ent.Value, 0, len(m.children))
+		for id := range m.children {
+			ids = append(ids, id)
+		}
+		return ids
+	case todo.EdgeParent:
+		if id := m.parent; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TodoMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.removedchildren != nil {
+		edges = append(edges, todo.EdgeChildren)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TodoMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case todo.EdgeChildren:
+		ids := make([]ent.Value, 0, len(m.removedchildren))
+		for id := range m.removedchildren {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TodoMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.clearedchildren {
+		edges = append(edges, todo.EdgeChildren)
+	}
+	if m.clearedparent {
+		edges = append(edges, todo.EdgeParent)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TodoMutation) EdgeCleared(name string) bool {
+	switch name {
+	case todo.EdgeChildren:
+		return m.clearedchildren
+	case todo.EdgeParent:
+		return m.clearedparent
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TodoMutation) ClearEdge(name string) error {
+	switch name {
+	case todo.EdgeParent:
+		m.ClearParent()
+		return nil
+	}
 	return fmt.Errorf("unknown Todo unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TodoMutation) ResetEdge(name string) error {
+	switch name {
+	case todo.EdgeChildren:
+		m.ResetChildren()
+		return nil
+	case todo.EdgeParent:
+		m.ResetParent()
+		return nil
+	}
 	return fmt.Errorf("unknown Todo edge %s", name)
 }

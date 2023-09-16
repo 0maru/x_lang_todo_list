@@ -13,14 +13,23 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "title", Type: field.TypeString, Size: 255},
 		{Name: "description", Type: field.TypeString, Size: 2147483647},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"todo", "in_progress", "done"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"IN_PROGRESS", "COMPLETED"}, Default: "IN_PROGRESS"},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "todo_parent", Type: field.TypeInt, Nullable: true},
 	}
 	// TodosTable holds the schema information for the "todos" table.
 	TodosTable = &schema.Table{
 		Name:       "todos",
 		Columns:    TodosColumns,
 		PrimaryKey: []*schema.Column{TodosColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "todos_todos_parent",
+				Columns:    []*schema.Column{TodosColumns[5]},
+				RefColumns: []*schema.Column{TodosColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
@@ -29,4 +38,5 @@ var (
 )
 
 func init() {
+	TodosTable.ForeignKeys[0].RefTable = TodosTable
 }

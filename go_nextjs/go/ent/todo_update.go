@@ -46,6 +46,14 @@ func (tu *TodoUpdate) SetStatus(t todo.Status) *TodoUpdate {
 	return tu
 }
 
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (tu *TodoUpdate) SetNillableStatus(t *todo.Status) *TodoUpdate {
+	if t != nil {
+		tu.SetStatus(*t)
+	}
+	return tu
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (tu *TodoUpdate) SetCreatedAt(t time.Time) *TodoUpdate {
 	tu.mutation.SetCreatedAt(t)
@@ -60,9 +68,70 @@ func (tu *TodoUpdate) SetNillableCreatedAt(t *time.Time) *TodoUpdate {
 	return tu
 }
 
+// AddChildIDs adds the "children" edge to the Todo entity by IDs.
+func (tu *TodoUpdate) AddChildIDs(ids ...int) *TodoUpdate {
+	tu.mutation.AddChildIDs(ids...)
+	return tu
+}
+
+// AddChildren adds the "children" edges to the Todo entity.
+func (tu *TodoUpdate) AddChildren(t ...*Todo) *TodoUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tu.AddChildIDs(ids...)
+}
+
+// SetParentID sets the "parent" edge to the Todo entity by ID.
+func (tu *TodoUpdate) SetParentID(id int) *TodoUpdate {
+	tu.mutation.SetParentID(id)
+	return tu
+}
+
+// SetNillableParentID sets the "parent" edge to the Todo entity by ID if the given value is not nil.
+func (tu *TodoUpdate) SetNillableParentID(id *int) *TodoUpdate {
+	if id != nil {
+		tu = tu.SetParentID(*id)
+	}
+	return tu
+}
+
+// SetParent sets the "parent" edge to the Todo entity.
+func (tu *TodoUpdate) SetParent(t *Todo) *TodoUpdate {
+	return tu.SetParentID(t.ID)
+}
+
 // Mutation returns the TodoMutation object of the builder.
 func (tu *TodoUpdate) Mutation() *TodoMutation {
 	return tu.mutation
+}
+
+// ClearChildren clears all "children" edges to the Todo entity.
+func (tu *TodoUpdate) ClearChildren() *TodoUpdate {
+	tu.mutation.ClearChildren()
+	return tu
+}
+
+// RemoveChildIDs removes the "children" edge to Todo entities by IDs.
+func (tu *TodoUpdate) RemoveChildIDs(ids ...int) *TodoUpdate {
+	tu.mutation.RemoveChildIDs(ids...)
+	return tu
+}
+
+// RemoveChildren removes "children" edges to Todo entities.
+func (tu *TodoUpdate) RemoveChildren(t ...*Todo) *TodoUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tu.RemoveChildIDs(ids...)
+}
+
+// ClearParent clears the "parent" edge to the Todo entity.
+func (tu *TodoUpdate) ClearParent() *TodoUpdate {
+	tu.mutation.ClearParent()
+	return tu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -131,6 +200,80 @@ func (tu *TodoUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.CreatedAt(); ok {
 		_spec.SetField(todo.FieldCreatedAt, field.TypeTime, value)
 	}
+	if tu.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   todo.ChildrenTable,
+			Columns: []string{todo.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !tu.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   todo.ChildrenTable,
+			Columns: []string{todo.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   todo.ChildrenTable,
+			Columns: []string{todo.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tu.mutation.ParentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   todo.ParentTable,
+			Columns: []string{todo.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   todo.ParentTable,
+			Columns: []string{todo.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{todo.Label}
@@ -169,6 +312,14 @@ func (tuo *TodoUpdateOne) SetStatus(t todo.Status) *TodoUpdateOne {
 	return tuo
 }
 
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (tuo *TodoUpdateOne) SetNillableStatus(t *todo.Status) *TodoUpdateOne {
+	if t != nil {
+		tuo.SetStatus(*t)
+	}
+	return tuo
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (tuo *TodoUpdateOne) SetCreatedAt(t time.Time) *TodoUpdateOne {
 	tuo.mutation.SetCreatedAt(t)
@@ -183,9 +334,70 @@ func (tuo *TodoUpdateOne) SetNillableCreatedAt(t *time.Time) *TodoUpdateOne {
 	return tuo
 }
 
+// AddChildIDs adds the "children" edge to the Todo entity by IDs.
+func (tuo *TodoUpdateOne) AddChildIDs(ids ...int) *TodoUpdateOne {
+	tuo.mutation.AddChildIDs(ids...)
+	return tuo
+}
+
+// AddChildren adds the "children" edges to the Todo entity.
+func (tuo *TodoUpdateOne) AddChildren(t ...*Todo) *TodoUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tuo.AddChildIDs(ids...)
+}
+
+// SetParentID sets the "parent" edge to the Todo entity by ID.
+func (tuo *TodoUpdateOne) SetParentID(id int) *TodoUpdateOne {
+	tuo.mutation.SetParentID(id)
+	return tuo
+}
+
+// SetNillableParentID sets the "parent" edge to the Todo entity by ID if the given value is not nil.
+func (tuo *TodoUpdateOne) SetNillableParentID(id *int) *TodoUpdateOne {
+	if id != nil {
+		tuo = tuo.SetParentID(*id)
+	}
+	return tuo
+}
+
+// SetParent sets the "parent" edge to the Todo entity.
+func (tuo *TodoUpdateOne) SetParent(t *Todo) *TodoUpdateOne {
+	return tuo.SetParentID(t.ID)
+}
+
 // Mutation returns the TodoMutation object of the builder.
 func (tuo *TodoUpdateOne) Mutation() *TodoMutation {
 	return tuo.mutation
+}
+
+// ClearChildren clears all "children" edges to the Todo entity.
+func (tuo *TodoUpdateOne) ClearChildren() *TodoUpdateOne {
+	tuo.mutation.ClearChildren()
+	return tuo
+}
+
+// RemoveChildIDs removes the "children" edge to Todo entities by IDs.
+func (tuo *TodoUpdateOne) RemoveChildIDs(ids ...int) *TodoUpdateOne {
+	tuo.mutation.RemoveChildIDs(ids...)
+	return tuo
+}
+
+// RemoveChildren removes "children" edges to Todo entities.
+func (tuo *TodoUpdateOne) RemoveChildren(t ...*Todo) *TodoUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tuo.RemoveChildIDs(ids...)
+}
+
+// ClearParent clears the "parent" edge to the Todo entity.
+func (tuo *TodoUpdateOne) ClearParent() *TodoUpdateOne {
+	tuo.mutation.ClearParent()
+	return tuo
 }
 
 // Where appends a list predicates to the TodoUpdate builder.
@@ -283,6 +495,80 @@ func (tuo *TodoUpdateOne) sqlSave(ctx context.Context) (_node *Todo, err error) 
 	}
 	if value, ok := tuo.mutation.CreatedAt(); ok {
 		_spec.SetField(todo.FieldCreatedAt, field.TypeTime, value)
+	}
+	if tuo.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   todo.ChildrenTable,
+			Columns: []string{todo.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !tuo.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   todo.ChildrenTable,
+			Columns: []string{todo.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   todo.ChildrenTable,
+			Columns: []string{todo.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuo.mutation.ParentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   todo.ParentTable,
+			Columns: []string{todo.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   todo.ParentTable,
+			Columns: []string{todo.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Todo{config: tuo.config}
 	_spec.Assign = _node.assignValues

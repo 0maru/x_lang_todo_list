@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -22,8 +23,20 @@ const (
 	FieldStatus = "status"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeChildren holds the string denoting the children edge name in mutations.
+	EdgeChildren = "children"
+	// EdgeParent holds the string denoting the parent edge name in mutations.
+	EdgeParent = "parent"
 	// Table holds the table name of the todo in the database.
 	Table = "todos"
+	// ChildrenTable is the table that holds the children relation/edge.
+	ChildrenTable = "todos"
+	// ChildrenColumn is the table column denoting the children relation/edge.
+	ChildrenColumn = "todo_parent"
+	// ParentTable is the table that holds the parent relation/edge.
+	ParentTable = "todos"
+	// ParentColumn is the table column denoting the parent relation/edge.
+	ParentColumn = "todo_parent"
 )
 
 // Columns holds all SQL columns for todo fields.
@@ -35,10 +48,21 @@ var Columns = []string{
 	FieldCreatedAt,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "todos"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"todo_parent",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -55,11 +79,13 @@ var (
 // Status defines the type for the "status" enum field.
 type Status string
 
+// StatusInProgress is the default value of the Status enum.
+const DefaultStatus = StatusInProgress
+
 // Status values.
 const (
-	StatusTodo       Status = "todo"
-	StatusInProgress Status = "in_progress"
-	StatusDone       Status = "done"
+	StatusInProgress Status = "IN_PROGRESS"
+	StatusCompleted  Status = "COMPLETED"
 )
 
 func (s Status) String() string {
@@ -69,7 +95,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusTodo, StatusInProgress, StatusDone:
+	case StatusInProgress, StatusCompleted:
 		return nil
 	default:
 		return fmt.Errorf("todo: invalid enum value for status field: %q", s)
@@ -102,4 +128,39 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByChildrenCount orders the results by children count.
+func ByChildrenCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newChildrenStep(), opts...)
+	}
+}
+
+// ByChildren orders the results by children terms.
+func ByChildren(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newChildrenStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByParentField orders the results by parent field.
+func ByParentField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newParentStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newChildrenStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ChildrenTable, ChildrenColumn),
+	)
+}
+func newParentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ParentTable, ParentColumn),
+	)
 }

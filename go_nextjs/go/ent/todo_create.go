@@ -38,6 +38,14 @@ func (tc *TodoCreate) SetStatus(t todo.Status) *TodoCreate {
 	return tc
 }
 
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (tc *TodoCreate) SetNillableStatus(t *todo.Status) *TodoCreate {
+	if t != nil {
+		tc.SetStatus(*t)
+	}
+	return tc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (tc *TodoCreate) SetCreatedAt(t time.Time) *TodoCreate {
 	tc.mutation.SetCreatedAt(t)
@@ -50,6 +58,40 @@ func (tc *TodoCreate) SetNillableCreatedAt(t *time.Time) *TodoCreate {
 		tc.SetCreatedAt(*t)
 	}
 	return tc
+}
+
+// AddChildIDs adds the "children" edge to the Todo entity by IDs.
+func (tc *TodoCreate) AddChildIDs(ids ...int) *TodoCreate {
+	tc.mutation.AddChildIDs(ids...)
+	return tc
+}
+
+// AddChildren adds the "children" edges to the Todo entity.
+func (tc *TodoCreate) AddChildren(t ...*Todo) *TodoCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tc.AddChildIDs(ids...)
+}
+
+// SetParentID sets the "parent" edge to the Todo entity by ID.
+func (tc *TodoCreate) SetParentID(id int) *TodoCreate {
+	tc.mutation.SetParentID(id)
+	return tc
+}
+
+// SetNillableParentID sets the "parent" edge to the Todo entity by ID if the given value is not nil.
+func (tc *TodoCreate) SetNillableParentID(id *int) *TodoCreate {
+	if id != nil {
+		tc = tc.SetParentID(*id)
+	}
+	return tc
+}
+
+// SetParent sets the "parent" edge to the Todo entity.
+func (tc *TodoCreate) SetParent(t *Todo) *TodoCreate {
+	return tc.SetParentID(t.ID)
 }
 
 // Mutation returns the TodoMutation object of the builder.
@@ -87,6 +129,10 @@ func (tc *TodoCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (tc *TodoCreate) defaults() {
+	if _, ok := tc.mutation.Status(); !ok {
+		v := todo.DefaultStatus
+		tc.mutation.SetStatus(v)
+	}
 	if _, ok := tc.mutation.CreatedAt(); !ok {
 		v := todo.DefaultCreatedAt()
 		tc.mutation.SetCreatedAt(v)
@@ -158,6 +204,39 @@ func (tc *TodoCreate) createSpec() (*Todo, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.CreatedAt(); ok {
 		_spec.SetField(todo.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := tc.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   todo.ChildrenTable,
+			Columns: []string{todo.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   todo.ParentTable,
+			Columns: []string{todo.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(todo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.todo_parent = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

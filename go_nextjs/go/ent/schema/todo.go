@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"time"
 )
@@ -17,8 +18,18 @@ func (Todo) Fields() []ent.Field {
 			MaxLen(255),
 		field.Text("description"),
 		field.Enum("status").
-			Values("todo", "in_progress", "done"),
+			NamedValues(
+				"InProgress", "IN_PROGRESS",
+				"Completed", "COMPLETED",
+			).
+			Default("IN_PROGRESS"),
 		field.Time("created_at").
 			Default(time.Now),
+	}
+}
+
+func (Todo) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("parent", Todo.Type).Unique().From("children"),
 	}
 }

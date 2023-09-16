@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="3251ceaf-989a-49c7-8556-ce4cab7beb88" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/apps/docs/.eslintrc.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/app/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/app/globals.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/app/layout.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/app/page.module.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/app/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/next-env.d.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/next.config.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/public/circles.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/public/next.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/public/turborepo.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/public/vercel.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/docs/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/.eslintrc.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/app/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/app/globals.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/app/layout.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/app/page.module.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/app/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/next-env.d.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/next.config.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/public/circles.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/public/next.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/public/turborepo.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/public/vercel.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/eslint-config-custom/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/eslint-config-custom/library.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/eslint-config-custom/next.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/eslint-config-custom/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/eslint-config-custom/react-internal.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/tsconfig/base.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/tsconfig/nextjs.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/tsconfig/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/tsconfig/react-library.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/.eslintrc.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/card.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/index.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/turbo/generators/config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/turbo/generators/templates/component.hbs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pnpm-workspace.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pnpm-workspace.yaml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2VTuKmkLGA9gsw6JA7OxfbDCZJV" />
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "dart.analysis.tool.window.visible": "false",
+    "go.import.settings.migrated": "true",
+    "last_opened_file_path": "/Users/maru/workspaces/github.com/0maru/x_lang_todo_list/go_nextjs",
+    "nodejs_package_manager_path": "pnpm",
+    "show.migrate.to.gradle.popup": "false",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.dev" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3251ceaf-989a-49c7-8556-ce4cab7beb88" name="Changes" comment="" />
+      <created>1694872330079</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1694872330079</updated>
+      <workItem from="1694872331117" duration="1014000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+</project>
